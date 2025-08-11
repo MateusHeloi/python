@@ -1,7 +1,7 @@
 import requests
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
-api_key = 'd15b8c20af45148b89b70150becd6764'
+api_key = ''
 analyzer = SentimentIntensityAnalyzer()
 def suggest_movies():
     phrase = input("Como voce esta se sentindo ?")
