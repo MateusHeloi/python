@@ -42,3 +42,5 @@ O gráfico de linha de Lucro Acumulado reflete essa regra de negócio. Ele mostr
 Entender a proporção entre o que entra (receitas) e o que sai (despesas) é crucial para gerenciar a empresa.
 
 O gráfico de pizza de Proporção Média te dá uma visão rápida. A regra de negócio aqui é: "Se as despesas representam uma porcentagem muito alta das receitas, a margem de lucro é pequena e a empresa pode estar em risco." No seu painel, as receitas são maiores, o que é um bom sinal.
+
+link codigo: https://github.com/MateusHeloi/python/blob/main/AnaliseFinanceira/main.py
