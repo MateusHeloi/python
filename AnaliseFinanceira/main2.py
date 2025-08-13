@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 #Gerando dados fictícios
 
+
 np.random.seed(42)
 datas = pd.date_range(start='2022-01-01', periods=500)
 receitas = np.random.normal(5000, 2000, 500).cumsum()
