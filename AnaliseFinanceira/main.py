@@ -1,125 +1,76 @@
 import pandas as pd
 import numpy as np
-import random
-import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 import seaborn as sns
+import matplotlib.pyplot as plt
 
 
-# Gerando dados aleatórios para simular receitas, despesas e outras colunas
-np.random.seed(42)  # Definindo a semente para reprodução dos mesmos resultados
+#Gerando dados fitícios
 
-# Gerando datas fictícias
-datas = pd.date_range(start='1/1/2022', periods=500, freq='ME')
 
-# Gerando valores aleatórios para as colunas
-receitas = np.random.normal(loc=5000, scale=1500, size=500).round(2)
-despesas = np.random.normal(loc=3000, scale=1000, size=500).round(2)
-previsto = np.random.normal(loc=4000, scale=1000, size=500).round(2)
-real = np.random.normal(loc=3500, scale=1200, size=500).round(2)
+np.random.seed(42)
+datas = pd.date_range(start='2022-01-01', periods=500)
+receitas = np.random.normal(5000, 2000, 500).cumsum()
+despesas = np.random.normal(4000, 1500, 500).cumsum()
 
-# Criando um DataFrame com os dados gerados aleatoriamente
-dados = {
+df = pd.DataFrame({
     'Data': datas,
     'Receitas': receitas,
-    'Despesas': despesas,
-    'Previsto': previsto,
-    'Real': real
+    'Despesas': despesas
+})
+
+df['Lucro'] = df['Receitas'] - df['Despesas']
+lucro_mensal = df.resample('M', on='Data').sum()
+
+
+# Estilizando
+
+sns.set_theme(style="whitegrid", font="Arial", font_scale=1.1)
+colors = {
+    'receitas': "#27ae60",  # verde
+    'despesas': "#c0392b",  # vermelho
+    'lucro': "#2980b9",     # azul
+    'lucro_area': "#2ecc71",
+    'prejuizo_area': "#e74c3c"
 }
 
-df = pd.DataFrame(dados)
+fig, axs = plt.subplots(2, 2, figsize=(16, 10))
+fig.suptitle(" Painel Financeiro - Análise de Receitas, Despesas e Lucro", fontsize=18, fontweight='bold')
 
-# Salvando os dados em um arquivo Excel
-df.to_excel('dados_financeiros.xlsx', index=False)
+# Gráfico Receitas vs Despesas
+axs[0, 0].plot(df['Data'], df['Receitas'], label='Receitas', linewidth=2, color=colors['receitas'])
+axs[0, 0].plot(df['Data'], df['Despesas'], label='Despesas', linewidth=2, color=colors['despesas'])
+axs[0, 0].fill_between(df['Data'], df['Receitas'], df['Despesas'],
+                       where=(df['Receitas'] >= df['Despesas']),
+                       interpolate=True, color=colors['lucro_area'], alpha=0.15, label='Lucro')
+axs[0, 0].fill_between(df['Data'], df['Receitas'], df['Despesas'],
+                       where=(df['Receitas'] < df['Despesas']),
+                       interpolate=True, color=colors['prejuizo_area'], alpha=0.15, label='Prejuízo')
+axs[0, 0].set_title('Receitas vs Despesas', fontsize=14, fontweight='bold')
+axs[0, 0].legend()
 
-# Visualizar as primeiras linhas do DataFrame
-print(df.head())
+#Gráfico Lucro Mensal
+sns.barplot(x=lucro_mensal.index, y=lucro_mensal['Lucro'],
+            palette=sns.color_palette("RdYlGn", n_colors=len(lucro_mensal)),
+            ax=axs[0, 1])
+axs[0, 1].axhline(0, color='black', linewidth=1)
+axs[0, 1].set_title('Lucro Mensal', fontsize=14, fontweight='bold')
+axs[0, 1].set_xticklabels(lucro_mensal.index.strftime('%b %Y'), rotation=45)
 
-# Obter informações sobre o DataFrame
-print(df.info())
+#Gráfico Proporção Média
+media_receitas = df['Receitas'].mean()
+media_despesas = df['Despesas'].mean()
+axs[1, 0].pie([media_receitas, media_despesas],
+              labels=['Receitas', 'Despesas'],
+              autopct='%1.1f%%',
+              colors=[colors['receitas'], colors['despesas']],
+              textprops={'fontsize': 12})
+axs[1, 0].set_title('Proporção Média Receitas x Despesas', fontsize=14, fontweight='bold')
 
-# Realizar estatísticas descritivas básicas
-print(df.describe())
-# Gerar dados fictícios para o exemplo
-data = {
-    'Data': pd.date_range(start='1/1/2022', periods=500),
-    'Receitas': np.random.normal(5000, 2000, 500).cumsum(),
-    'Despesas': np.random.normal(4000, 1500, 500).cumsum()
-}
-df_generated = pd.DataFrame(data)
+#Gráfico Lucro Acuumulado
+df['Lucro Acumulado'] = df['Lucro'].cumsum()
+sns.lineplot(x='Data', y='Lucro Acumulado', data=df, linewidth=2, ax=axs[1, 1], color=colors['lucro'])
+axs[1, 1].set_title('Lucro Acumulado', fontsize=14, fontweight='bold')
+axs[1, 1].grid(True)
 
-# Configuração do estilo do gráfico
-plt.style.use('seaborn-v0_8-darkgrid')
-
-
-# Plotagem do gráfico de linha para Receitas e Despesas ao longo do tempo
-fig, ax = plt.subplots(figsize=(12, 6))
-
-ax.plot(df_generated['Data'], df_generated['Receitas'], label='Receitas', linewidth=2)
-ax.plot(df_generated['Data'], df_generated['Despesas'], label='Despesas', linewidth=2)
-
-# Adicionando título e rótulos dos eixos
-plt.title('Análise de Receitas e Despesas ao Longo do Tempo', fontsize=16)
-plt.xlabel('Data', fontsize=12)
-plt.ylabel('Valor (R$)', fontsize=12)
-
-# Adicionar formatação para os valores do eixo y em reais
-formatter = ticker.StrMethodFormatter('R$ {x:,.0f}')
-ax.yaxis.set_major_formatter(formatter)
-
-# Adicionando legenda, grid e personalização
-plt.legend(fontsize=12)
-plt.grid(True)
-plt.tight_layout()
-
-# Mostrar o gráfico
+plt.tight_layout(rect=[0, 0, 1, 0.96])
 plt.show()
-df_generated['Lucro'] = df_generated['Receitas'] - df_generated['Despesas']
-ax.plot(df_generated['Data'], df_generated['Lucro'], label='Lucro', linewidth=2, linestyle='--', color='green')
-max_receita = df_generated['Receitas'].max()
-max_receita_data = df_generated.loc[df_generated['Receitas'].idxmax(), 'Data']
-ax.annotate(f'Máx Receita: R$ {max_receita:,.0f}',
-            xy=(max_receita_data, max_receita),
-            xytext=(max_receita_data, max_receita+50000),
-            arrowprops=dict(facecolor='black', arrowstyle='->'))
-
-ax.fill_between(df_generated['Data'], df_generated['Receitas'], df_generated['Despesas'],
-                where=(df_generated['Receitas'] >= df_generated['Despesas']),
-                interpolate=True, color='green', alpha=0.1, label='Lucro')
-
-ax.fill_between(df_generated['Data'], df_generated['Receitas'], df_generated['Despesas'],
-                where=(df_generated['Receitas'] < df_generated['Despesas']),
-                interpolate=True, color='red', alpha=0.1, label='Prejuízo')
-ax.xaxis.set_major_locator(ticker.MaxNLocator(10))  # menos marcas no eixo
-fig.autofmt_xdate()  # rotaciona datas automaticamente
-
-
-plt.savefig('analise_financeira.png', dpi=300)
-media_receitas = df_generated['Receitas'].mean()
-media_despesas = df_generated['Despesas'].mean()
-
-plt.figure(figsize=(6, 6))
-plt.pie([media_receitas, media_despesas],
-        labels=['Receitas', 'Despesas'],
-        autopct='%1.1f%%',
-        colors=['#2ecc71', '#e74c3c'])
-plt.title('Proporção Média Receitas x Despesas', fontsize=16)
-plt.show()
-plt.figure(figsize=(8, 6))
-sns.scatterplot(x='Receitas', y='Despesas', data=df_generated, alpha=0.6)
-plt.title('Relação entre Receitas e Despesas', fontsize=16)
-plt.xlabel('Receitas (R$)')
-plt.ylabel('Despesas (R$)')
-plt.tight_layout()
-plt.show()
-df_generated['Lucro Acumulado'] = df_generated['Lucro'].cumsum()
-
-plt.figure(figsize=(12, 6))
-sns.lineplot(x='Data', y='Lucro Acumulado', data=df_generated, linewidth=2)
-plt.title('Lucro Acumulado ao Longo do Tempo', fontsize=16)
-plt.ylabel('Valor (R$)', fontsize=12)
-plt.xlabel('Data', fontsize=12)
-plt.grid(True)
-plt.tight_layout()
-plt.show()
-
