@@ -4,7 +4,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
-#Gerando dados fictícios
+#Gerando dados fitícios
 
 
 np.random.seed(42)
@@ -66,7 +66,7 @@ axs[1, 0].pie([media_receitas, media_despesas],
               textprops={'fontsize': 12})
 axs[1, 0].set_title('Proporção Média Receitas x Despesas', fontsize=14, fontweight='bold')
 
-#Gráfico Lucro Acumulado
+#Gráfico Lucro Acuumulado
 df['Lucro Acumulado'] = df['Lucro'].cumsum()
 sns.lineplot(x='Data', y='Lucro Acumulado', data=df, linewidth=2, ax=axs[1, 1], color=colors['lucro'])
 axs[1, 1].set_title('Lucro Acumulado', fontsize=14, fontweight='bold')
